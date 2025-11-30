@@ -3,108 +3,268 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Code Generator</title>
+  <title>Advance QR Code Generator</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
-<body class="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-500 to-indigo-900 transition-all duration-500">
+<body class="bg-gradient-primary">
 
-  <div class="absolute top-4 right-4 z-50">
-    <button id="settingsBtn" class="bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 font-semibold px-4 py-2 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">⚙️ Settings</button>
-  </div>
-
-  <div class="absolute top-20 right-4 z-50">
-    <button id="historyBtn" class="bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 font-semibold px-4 py-2 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">📜 History</button>
-  </div>
-
-  <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-2xl text-center w-96 transform transition-all duration-500 hover:shadow-3xl">
-    <h1 id="titleText" class="text-3xl font-bold text-gray-800 dark:text-white mb-6 transition-colors duration-300">Advanced QR code Generator</h1>
-
-    <div class="mb-4">
-      <input type="text" placeholder="Enter text or URl" id="qrText" class="w-full p-3 border-2 border-indigo-500 dark:border-indigo-400 rounded-xl outline-none bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-600 transition-all duration-300">
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-transparent position-fixed w-100" style="z-index: 1000;">
+    <div class="container">
+      <a href="#" class="navbar-brand fw-bold">
+        <i class="bi bi-qr-code me-2"></i>QR Generator Pro
+      </a>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-light btn-sm" id="settingsBtn" data-bs-toggle="modal" data-bs-target="#settingsModal">
+          <i class="bi bi-gear"></i> Settings
+        </button>
+        <button class="btn btn-outline-light btn-sm" id="historyBtn" data-bs-toggle="modal" data-bs-target="#historyModal">
+          <i class="bi bi-clock-history"></i> History
+        </button>
+        <button class="btn btn-outline-light btn-sm" id="themeToggle">
+          <i class="bi bi-moon-fill" id="themeIcon"></i> 
+        </button>
+      </div>
     </div>
+  </nav>
 
-    <button id="generateBtn" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-500 dark:to-purple-500 text-white py-3 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 dark:hover:from-indigo-600 dark:hover:to-purple-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">Generate QR Code</button>
-    
-    <div id="qrCode" class="mt-6 flex justify-center items-center min-h-[180px] transition-all duration-300"></div>
+  <!-- Main Content -->
+  <div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center pt-5">
+    <div class="row justify-content-center w-100">
+      <div class="col-12 col-md-8 col-lg-6 col-xl-5">
 
-    <button id="downloadBtn" class="hidden w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-600 dark:to-emerald-700 text-white py-3 rounded-xl font-semibold hover:from-green-600 hover:to-emerald-700 dark:hover:from-green-700 dark:hover:to-emerald-800 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">Download QR Code</button>
-  </div>
+        <!-- Main Card -->
+        <div class="card shadow-lg border-0 rounded-4 main-card">
+          <div class="card-body p-4 p-md-5">
 
-  <!-- Dialog Box -->
+            <!-- Header -->
+            <div class="text-center mb-4">
+              <div class="qr-icon mb-3">
+                <i class="bi bi-qr-code display-4 text-primary"></i>
+              </div>
+              <h1 class="h3 fw-bold text-dark mb-2" id="titleText">Advance QR Code Generator</h1>
+              <p class="text-muted mb-0">Create beautiful QR codes instantly</p>
+            </div>
 
-  <dialog id="alertDialog" class="rounded-xl p-6 text-center backdrop:bg-black/70 bg-white dark:bg-gray-800 border-2 border-indigo-500 dark:border-indigo-400 shadow-2xl">
-    <p id="alertText" class="text-lg font-semibold text-gray-700 mb-4">⚠️ Please enter some text or URL!</p>
-    <button id="closeDialog" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105">OK</button>
-  </dialog>
-  
-  <!-- Settings Modal -->
+            <!-- Alert for errors -->
+            <div class="alert alert-warning alert-dismissible fade" id="alertBox" style="display: none;" role="alert">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              <span id="alertText">Please enter some text or URL!</span>
+              <button class="btn-close" type="button" data-bs-dismiss="alert"></button>
+            </div>
 
-  <dialog id="settingsDialog" class="rounded-lg p-6 backdrop:bg-black/70 bg-white dark:bg-gray-800 w-96 shadow-2xl border-2 border-indigo-500 dark:border-indigo-400">
-    <h2 class="text-2xl font-bold mb-5 text-gray-800 dark:text-white">Settings</h2>
+            <form id="qrForm" class="mb-4">
+              <div class="mb-3">
+                <label for="qrText" class="form-label fw-semibold">Enter Text or URL</label>
+                <div class="input-group input-group-lg">
+                  <span class="input-group-text bg-light border-end-0">
+                    <i class="bi bi-link-45deg text-primary"></i>
+                  </span>
+                  <input type="text" class="form-control border-start-0 ps-0" id="qrText" placeholder="https://example.com or any text..." autocomplete="off">
+                </div>
+              </div>
 
-    <div class="mb-5 text-left">
-      <label class="block mb-2 font-semibold text-gray-700 dark:text-gray-200">🌓 Theme:</label>
-      <select id="themeSelect" class="p-3 border-2 dark:boder-gray-600 rounded-lg w-full bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 transition-all duration-300">
-        <option value="system">System Default</option>
-        <option value="light">Light Mode</option>
-        <option value="dark">Dark Mode</option>
-      </select>
-    </div>
+              <!-- Quick Options -->
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <select id="qrType" class="form-select">
+                    <option value="text">Text/URL</option>
+                    <option value="wifi">Wifi</option>
+                    <option value="email">Email</option>
+                    <option value="phone">Phone</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <select id="formatSelect" class="form-select">
+                    <option value="png">PNG Format</option>
+                    <option value="jpg">JPG Format</option>
+                    <option value="svg">SVG Format</option>
+                  </select>
+                </div>
+              </div>
 
-    <div class="mb-5 text-left">
-      <label class="block mb-2 font-semibold text-gray-700 dark:text-gray-200">🌐 Language</label>
-      <select id="langSelect" class="p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg w-full bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 transition-all duration-300">
-        <option value="en">English</option>
-        <option value="hi">हिंदी (Hindi)</option>
-        <option value="hi">Espanol (Spanish)</option>
-      </select>
-    </div>
+              <!-- Genarate Button -->
+              <button class="btn btn-primary btn-lg w-100 mb-3 generate-btn" id="generateBtn" type="submit">
+                <i class="bi bi-magic me-2"></i>
+                <span id="generateBtnText">Generate QR Code</span>
+              </button>
+            </form>
 
-    <div class="mb-5 text-left">
-      <label class="block mb-2 font-semibold text-gray-700 dark:text-gray-200">📏 QR Code Size:</label>
-      <select id="sizeSelect" class="p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg w-full bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 transition-all duration-300">
-        <option value="128">Small (128x128)</option>
-        <option value="200" selected>Medium (200x200)</option>
-        <option value="256">Large (256x256)</option>
-        <option value="320">Extra Large (320x320)</option>
-      </select>
-    </div>
+            <!-- QR Code Display -->
+            <div class="text-center mb-4">
+              <div id="qrCode" class="qr-display p-4 rounded-3 bg-light border-dashed border-primary d-flex align-items-center justify-content-center" style="min-height: 200px;">
+                <div class="text-muted">
+                  <i class="bi bi-qr-code display-1 opacity-25"></i>
+                  <p class="mt-2 mb-0">Your QR code will appear here</p>
+                </div>
+              </div>
+            </div>
 
-    <div class="mb-5 text-left">
-      <label class="block mb-2 font-semibold text-gray-700 dark:text-gray-200">📏 QR Code Size:</label>
-      <div class="flex gap-3">
-        <div class="flex-1">
-          <label class="block text-sm mb-1 text-gray-600 dark:text-gray-300">Dark Color:</label>
-          <input type="color" id="darkColor" value="#000000" class="w-full h-10 rounded-lg cursor-pointer border-2 border-gray-300 dark:border-gray-600">
+            <!-- Download Options -->
+            <div id="downloadSection" class="d-none">
+              <div class="row g-2">
+                <div class="col-8">
+                  <button class="btn btn-success w-100" id="downloadBtn">
+                    <i class="bi bi-download me-2"></i>Download QR Code
+                  </button>
+                </div>
+                <div class="col-4">
+                  <button class="btn btn-outline-primary w-100" id="shareBtn" title="Copy to Clipboard">
+                    <i class="bi bi-share"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="flex-1">
-          <label class="block text-sm mb-1 text-gray-600 dark:text-gray-300">Light Color:</label>
-          <input type="color" id="lightColor" value="#ffffff" class="w-full h-10 rounded-lg cursor-pointer border-2 border-gray-300 dark:border-gray-600">
+
+        <!-- Quick Stats -->
+        <div class="row g-3 mt-3">
+          <div class="col-4">
+            <div class="card border-0 bg-white bg-opacity-75">
+              <div class="card-body text-center py-3">
+                <div class="h5 mb-1 text-primary fw-bold" id="totalGenerated">0</div>
+                <small class="text-muted">Generated</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="card border-0 bg-white bg-opacity-75">
+              <div class="card-body text-center py-3">
+                <div class="h5 mb-1 text-primary fw-bold" id="totalDownloads">0</div>
+                <small class="text-muted">Downloads</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="card border-0 bg-white bg-opacity-75">
+              <div class="card-body text-center py-3">
+                <div class="h5 mb-1 text-primary fw-bold" id="historyCount">0</div>
+                <small class="text-muted">History</small>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="mb-5 text-left">
-      <label class="block mb-2 font-semibold text-gray-700 dark:text-gray-200">📏 QR Code Size:</label>
-      <select id="errorLevel" class="p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg w-full bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 transition-all duration-300">
-        <option value="L">Low (7%)</option>
-        <option value="M" selected>Medium (15%)</option>
-        <option value="Q">Quartile (25%)</option>
-        <option value="H">High (30%)</option>
-      </select>
+  <!-- Settings Modal -->
+  <div class="modal fade" id="settingsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">
+            <i class="bi bi-gear me-2"></i>Settings
+          </h5>
+          <button class="btn-close btn-close-white" type="button" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+
+          <!-- Language Selection -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold">
+              <i class="bi bi-globe me-2 text-primary"></i>Language
+            </label>
+            <select id="langSelect" class="form-select">
+              <option value="en">English</option>
+              <option value="hi">हिंदी (Hindi)</option>
+              <option value="es">Espanol (Spanish)</option>
+            </select>
+          </div>
+
+          <!-- QR Code Size -->
+          <div class="mb-4">
+            <label class="form-label
+            fw-semibold">
+              <i class="bi bi-aspect-ratio me-2 text-primary"></i>QR Code Size
+            </label>
+            <select id="sizeSelect" class="form-select">
+              <option value="128">Small (128x128)</option>
+              <option value="200" selected>Medium (200x200)</option>
+              <option value="256">Large (256x256)</option>
+              <option value="320">Extra Large (320x320)</option>
+            </select>
+          </div>
+
+          <!-- Color Customization -->
+          <div class="mb-4">
+            <label class="from-label fw-semibold">
+              <i class="bi bi-palette me-2 text-primary"></i>Color Customization
+            </label>
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="form-label small">Foreground Color</label>
+                <input type="color" class="form-control form-control-color" id="darkColor" value="#000000">
+              </div>
+              <div class="col-6">
+                <label class="form-label small">Background Color</label>
+                <input type="color" class="form-control form-control-color" id="lightColor" value="#ffffff">
+              </div>
+            </div>
+          </div>
+
+          <!-- Error Correction Level -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold">
+              <i class="bi bi-shield-check me-2 text-primary"></i>Error Correction Level
+            </label>
+            <select id="errorLevel" class="form-select">
+              <option value="L">Low (7%)</option>
+              <option value="M" selected>Medium (15%)</option>
+              <option value="Q">Quartile (25%)</option>
+              <option value="H">High (30%)</option>
+            </select>
+          </div>
+
+          <!-- Auto-save Settings -->
+          <div class="form-control form-switch">
+            <input type="checkbox" class="form-check-input" id="autoSave" checked>
+            <label class="form-control-label" for="autoSave">Auto-save generated QR codes to history</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button class="btn btn-primary" id="saveSettings">Save Changes</button>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <button id="closeSettings" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-3 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 font-semibold">Close</button>
-  </dialog>
-
-  <dialog id="historyDialog" class="rounded-2xl p-6 backdrop:bg-black/70 bg-white dark:bg-gray-800 w-96 max-h-[80vh] overflow-y-auto shadow-2xl border-2 border-indigo-500 dark:borderindigo-400">
-    <h2 class="text-2xl font-bold mb-5 text-gray-800 dark:text-white">QR Code History</h2>
-    <div id="historyList" class="space-y-3 mb-5"></div>
-    <button id="closeHistory" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-3 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 font-semibold">Close</button>
-  </dialog>
+  <!-- History Modal -->
+  <div class="modal fade" id="historyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-info text-white">
+          <h5 class="modal-title">
+            <i class="bi bi-clock-history me-2"></i>QR Code History
+          </h5>
+          <button class="btn-close btn-close-white" type="button" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+          <div id="historyList" class="row g-3">
+            <!-- History items will be populated here -->
+          </div>
+          <div id="emptyHistory" class="text-center py-5 text-muted" style="display: none;">
+            <i class="bi bi-index display-1 opacity-25"></i>
+            <p class="mt-3 mb-0">No QR codes generated yet</p>
+            <small>Start creating QR codes to see them here</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" id="clearHistory">
+            <i class="bi bi-trash me-2"></i>Clear History
+          </button>
+          <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
   
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

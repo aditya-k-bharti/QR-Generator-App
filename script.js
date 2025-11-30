@@ -3,251 +3,322 @@
 const translations = {
   en: {
     title:        'Advanced QR Code Generator',
-    placeholder:  'Enter text or URL',
+    placeholder:  'https://example.com or any text...',
     generateBtn:  'Generate QR Code',
     downloadBtn:  'Download QR Code',
-    alert:        '⚠️ Please enter some text or URL!',
+    alert:        'Please enter some text or URL!',
     historyTitle: 'QR Code History',
-    noHistory:    'No history yet. Generate your first QR Code!',
-    clearHistory: 'Clear History'
+    noHistory:    'No QR codes generated yet',
+    clearHistory: 'Clear History',
+    generating:   'Generating...',
+    success:      'QR Code Generated!',
+    downloaded:   'Dowloaded!',
+    copied:       'Copied to clipboard!',
+    error:        'Something went wrong. Please try again.',
+    wifiFormat:   'WIFI:T:WPA;S:NetworkName;P:Password;;',
+    emailFormat:  'mailto:example@email.com?subject=Hello&body=Message',
+    phoneFormat:  'tel:+1234567890',
   },
   hi:{
     title:        'एडवांस्ड QR कोड जनरेटर',
     placeholder:  'टेक्स्ट या URL दर्ज करे',
     generateBtn:  'QR कोड बनाएं',
     downloadBtn:  'QR कोड डाउनलोड करे',
-    alert:        '⚠️ कृपया कुछ टेक्स्ट या URL दर्ज करे',
+    alert:        'कृपया कुछ टेक्स्ट या URL दर्ज करे',
     historyTitle: 'QR कोड इतिहास',
     noHistory:    'अभी तक कोई इतिहास, अपना पहला QR कोड बनाएं!',
-    clearHistory: 'इतिहास साफ करे'
+    clearHistory: 'इतिहास साफ करे',
+    generating:   'बना रहे है...',
+    success:      'QR कोड तैयार!',
+    downloaded:   'डाउनलोड हो गया',
+    copied:       'कॉपी हो गया',
+    error:        'कुछ गलत हुआ, कृपया फिर से कोशिश करे!',
+    wifiFormat:   'WIFI:T:WPA;S:नेटवर्क_नाम;P:पासवर्ड;;',
+    emailFormat:  'mailto:example@email.com?subject=नमस्ते&body=संदेश',
+    phoneFormat:  'tel:+91xxxxxxxxxx',
   },
   es:{
     title:        'Generador Avanzado de Codigos QR',
-    placeholder:  'Ingrese texto o URL',
+    placeholder:  'https://ejemplo.com o cualquier texto...',
     generateBtn:  'Generar Codigo QR',
     downloadBtn:  'Descarger Codigo QR',
     alert:        'Por favor ingrese texto o URL!',
     historyTitle: 'Historial de Codigos QR',
-    noHistory:    'Sin historial aun. Genera tu primer codigo QR!',
+    noHistory:    'Aun no se han generado codigos QR',
     clearHistory: 'Limpiar Historial',
+    generating:   'Generando...',
+    success:      'Codigo QR Generado!',
+    downloaded:   'Descargado!',
+    copied:       'Copiado al portapapeles!',
+    error:        'Algo salio mal. Por favor intente de nuevo.',
+    wifiFormat:   'WIFI:T:WPA;S:NombreRed;P:Contrasena;;',
+    emailFormat:  'mailto:ejemplo@email.com?subject=Hola&body=Mensaje',
+    phoneFormat:  'tel:+34xxxxxxxxxx',
   }
 };
 
 // 🌙 Theme Manager
 
 class ThemeManager{
-  constructor(selectId){
-    this.themeSelect = document.getElementById(selectId);
-    this.loadTheme();
-    this.themeSelect.addEventListener('change', () => this.changeTheme());
-    
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-      if(this.themeSelect.value === 'system'){
-        this.applyTheme('system');
-      }
-    })
+  constructor(){
+    this.themeToggle = document.getElementById('themeToggle');
+    this.themeIcon = document.getElementById('themeIcon');
+    this.currentTheme = localStorage.getItem('theme') || 'light';
+
+    this.init();
   }
 
-  loadTheme(){
-    const savedTheme = localStorage.getItem('theme') || 'system';
-    this.themeSelect.value = savedTheme;
-    this.applyTheme(savedTheme);
+  init(){
+    this.applyTheme(this.currentTheme);
+    this.themeToggle.addEventListener('click', () => this.toggleTheme());
+  }
+
+  toggleTheme(){
+    this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+    this.applyTheme(this.currentTheme);
+    localStorage.setItem('theme', this.currentTheme);
   }
 
   applyTheme(theme){
-    const html = document.documentElement;
     const body = document.body;
+    const icon = this.themeIcon;
 
-    html.classList.remove('dark');
-    body.classList.remove('from-blue-500', 'to-indigo-900', 'from-gray-800', 'to-gray-900', 'light-mode', 'dark-mode');
-
-    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-    if(isDark){
-      html.classList.add('dark');
-      body.classList.add('dark-mode');
-
-      body.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)';
+    if(theme === 'dark'){
+      body.classList.add('dark-theme');
+      icon.className = 'bi bi-sun-fill';
     } else{
-      body.classList.add('light-mode');
-      body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+      body.classList.remove('dark-theme');
+      icon.className = 'bi bi-moon-fill';
     }
-
-    localStorage.setItem('theme', theme);
-  }
-
-  changeTheme(){
-    this.applyTheme(this.themeSelect.value);
   }
 }
 
 // Language Manager 
 
 class LanguageManager{
-  constructor(selectId){
-    this.langSelect = document.getElementById(selectId);
-    this.loadLanguage();
-    this.langSelect.addEventListener('change', () => this.changeLanguage());
+  constructor(){
+    this.langSelect = document.getElementById('langSelect');
+    this.currentLang = localStorage.getItem('language') || 'en';
+
+    this.init();
   }
 
-  loadLanguage(){
-    const savedLang = localStorage.getItem('lang') || 'en';
-    this.langSelect.value = savedLang;
-    this.applyLanguage(savedLang);
+  init(){
+    this.langSelect.value = this.currentLang;
+    this.applyLanguage(this.currentLang);
+    this.langSelect.addEventListener('change', (e) => this.changeLanguage(e.target.value));
   }
 
   applyLanguage(lang){
     const t = translations[lang];
     document.getElementById('titleText').innerText = t.title;
     document.getElementById('qrText').placeholder = t.placeholder;
-    document.getElementById('generateBtn').innerText = t.generateBtn;
-    document.getElementById('downloadBtn').innerText = t.downloadBtn;
-    document.getElementById('alertText').innerText = t.alert;
-    localStorage.setItem('lang', lang);
+    document.getElementById('generateBtnText').innerText = t.generateBtn;
+    document.getElementById('downloadBtn').innerHTML = `<i class="bi bi-download me-2"></i>${t.downloadBtn}`;
+    
+    this.updatePlaceholder();
   }
 
-  changeLanguage(){
-    this.applyLanguage(this.langSelect.value);
+  changeLanguage(lang){
+    this.currentLang = lang;
+    this.applyLanguage(lang);
+    localStorage.setItem('language', lang)
   }
 
-  getCurrentLang(){
-    return this.langSelect.value;
+  updatePlaceholder(){
+    const qrType = document.getElementById('qrType').value;
+    const qrText = document.getElementById('qrText');
+    const t = translations[this.currentLang];
+
+    switch(qrType){
+      case 'wifi':
+        qrText.placeholder = t.wifiFormat;
+        break;
+      case 'email':
+        qrText.placeholder = t.emailFormat;
+        break;
+      case 'phone':
+        qrText.placeholder = t.phoneFormat;
+        break;
+      default:
+        qrText.placeholder = t.placeholder
+    }
+  }
+
+  getText(key){
+    return translations[this.currentLang][key] || translations.en[key];
   }
 }
 
-class QRCustomizer{
+class SettingsManager{
   constructor(){
-    this.sizeSelect = document.getElementById('sizeSelect');
-    this.darkColorInput = document.getElementById('darkColor');
-    this.lightColorInput = document.getElementById('lightColor');
-    this.errorLevelSelect = document.getElementById('errorLevel');
+    this.settings = {
+      size: 200,
+      darkColor: '#000000',
+      lightColor: '#ffffff',
+      errorLevel: 'M',
+      autoSave: true
+    };
 
     this.loadSettings();
-    this.addListeners();
+    this.initEventListeners();
   }
 
-  addListeners(){
-    this.sizeSelect.addEventListener('change', () => this.saveSettings());
-    this.darkColorInput.addEventListener('change', () => this.saveSettings());
-    this.lightColorInput.addEventListener('change', () => this.saveSettings());
-    this.errorLevelSelect.addEventListener('change', () => this.saveSettings());
+  initEventListeners(){
+    document.getElementById('saveSettings').addEventListener('click', () => this.saveSettings());
+
+    ['sizeSelect', 'darkColor', 'lightColor', 'errorLevel', 'autoSave'].forEach(id => {
+      const element = document.getElementById(id);
+      if(element){
+        element.addEventListener('change', () => this.saveSettings());
+      }
+    });
   }
 
   loadSettings(){
-    const settings = this.getSettings();
-    this.sizeSelect.value = settings.size;
-    this.darkColorInput.value = settings.darkColor;
-    this.lightColorInput.value = settings.lightColor;
-    this.errorLevelSelect.value = settings.errorLevel;
+    const saved = localStorage.getItem('qrSettings');
+    if(saved){
+      this.settings = { ...this.settings, ...JSON.parse(saved) };
+    }
+
+    document.getElementById('sizeSelect').value = this.settings.size;
+    document.getElementById('darkColor').value = this.settings.darkColor;
+    document.getElementById('lightColor').value = this.settings.lightColor;
+    document.getElementById('errorLevel').value = this.settings.errorLevel;
+    document.getElementById('autoSave').checked = this.settings.autoSave;
   }
 
   saveSettings(){
-    const settings = {
-      size: this.sizeSelect.value,
-      darkColor: this.darkColorInput.value,
-      lightColor: this.lightColorInput.value,
-      errorLevel: this.errorLevelSelect.value
+    this.settings = {
+      size: parseInt(document.getElementById('sizeSelect').value),
+      darkColor: document.getElementById('darkColor').value,
+      lightColor: document.getElementById('lightColor').value,
+      errorLevel: document.getElementById('errorLevel').value,
+      autoSave: document.getElementById('autoSave').checked
     };
-    localStorage.setItem('qrSettings', JSON.stringify(settings));
+
+    localStorage.setItem('qrSettings', JSON.stringify(this.settings));
+    this.showToast('Settings saved successfully!', 'success');
   }
 
   getSettings(){
-    const defaultSettings = {
-      size: '200',
-      darkColor: '#000000',
-      lightColor: '#ffffff',
-      errorLevel: 'M'
-    };
+    return this.settings;
+  }
 
-    const saved = localStorage.getItem('qrSettings');
-    return saved ? JSON.parse(saved) : defaultSettings;
+  showToast(message, type = 'info'){
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+      <i class="bi bi-check-circle me-2"></i>${message}
+      <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button>
+    `;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      if(toast.parentNode){
+        toast.parentNode.removeChild(toast);
+      }
+    }, 3000);
   }
 }
 
-class DownloadManager{
-  constructor(buttonId){
-    this.downloadBtn = document.getElementById(buttonId);
-    this.currentQRData = null;
+class StatsManager{
+  constructor(){
+    this.stats = {
+      totalGenerated: 0,
+      totalDownloads: 0,
+      historyCount: 0
+    };
+
+    this.loadStats();
+    this.updateDisplay();
   }
 
-  setQRData(text, canvas){
-    this.currentQRData = {text, canvas};
-    this.downloadBtn.classList.remove('hidden');
+  loadStats(){
+    const saved = localStorage.getItem('qrStats');
+    if(saved){
+      this.stats = { ...this.stats, ...JSON.parse(saved) };
+    }
   }
 
-  downloadQR(){
-    if(!this.currentQRData) return;
-
-    const canvas = this.currentQRData.canvas;
-    const link = document.createElement('a');
-    const timestamp = new Date().getTime();
-    link.download = `qr-code-${timestamp}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-
-    this.showSuccessMessage();
+  saveStats(){
+    localStorage.setItem('qrStats', JSON.stringify(this.stats));
   }
 
-  showSuccessMessage(){
-    const btn = this.downloadBtn;
-    const originalText = btn.innerText;
-    btn.innerText = 'Downloaded';
-    btn.classList.add('success-message');
-
-    setTimeout(() => {
-      btn.innerText = originalText;
-      btn.classList.remove('success-message');
-    }, 2000);
+  incrementGenerated(){
+    this.stats.totalGenerated++;
+    this.saveStats();
+    this.updateDisplay();    
   }
 
-  hide(){
-    this.downloadBtn.classList.add('hidden');
+  incrementDownloads(){
+    this.stats.totalDownloads++;
+    this.saveStats();
+    this.updateDisplay();
+  }
+
+  updateHistoryCount(count){
+    this.stats.historyCount = count;
+    this.saveStats();
+    this.updateDisplay();
+  }
+
+  updateDisplay(){
+    document.getElementById('totalGenerated').textContent = this.stats.totalGenerated;
+    document.getElementById('totalDownloads').textContent = this.stats.totalDownloads;
+    document.getElementById('historyCount').textContent = this.stats.historyCount;
+  }
+
+  reset(){
+    this.stats = { totalGenerated: 0, totalDownloads: 0, historyCount: 0 };
+    this.saveStats();
+    this.updateDisplay();
   }
 }
 
 class HistoryManager{
-  constructor(dialogId, listId, buttonId){
-    this.dialog = document.getElementById(dialogId);
-    this.listContainer = document.getElementById(listId);
-    this.historyBtn = document.getElementById(buttonId);
-    this.maxHistory = 10;
+  constructor(statsManager, langManager){
+    this.maxHistory = 20;
+    this.statsManager = statsManager;
+    this.langManager = langManager;
 
-    console.log('HistoryManager initialised');
-    // console.log('Dialog:', this.dialog);
-    // console.log('List container:', this.listContainer);
-    console.log('History button:', this.historyBtn);
-
-    if(this.historyBtn){
-      this.historyBtn.addEventListener('click', () => {
-        console.log('History button clicked!');
-        this.showHistory();
-      });
-      console.log('History button click listener added');
-    } else{
-      console.error('History button not found!');
-    }
-
-    const closeBtn = document.getElementById('closeHistory');
-    if(closeBtn){
-      closeBtn.addEventListener('click', () => this.dialog.close());
-    }
+    this.initEventListeners();
   }
 
-  addToHistory(text, imageData){
+  initEventListeners(){
+    document.getElementById('clearHistory').addEventListener('click', () => this.clearHistory());
+
+    document.getElementById('historyModal').addEventListener('show.bs.modal', () => {
+      this.displayHistory();
+    });
+  }
+
+  addToHistory(text, imageData, format = 'png'){
     const history = this.getHistory();
     const newItem = {
+      id: Date.now(),
       text: text,
       imageData: imageData,
-      timestamp: new Date().toISOString()
+      format: format,
+      timestamp: new Date().toISOString(),
+      size: document.getElementById('sizeSelect').value
     };
 
+    const existingIndex = history.findIndex(item => item.text === text);
+    if(existingIndex !== -1){
+      history.splice(existingIndex, 1);
+    }
+
     history.unshift(newItem);
+
     if(history.length > this.maxHistory){
-      history.pop();
+      history.splice(this.maxHistory);
     }
 
     localStorage.setItem('qrHistory', JSON.stringify(history));
-    console.log('Added to history:', text);
+    this.statsManager.updateHistoryCount(history.length);
   }
 
   getHistory(){
@@ -255,54 +326,63 @@ class HistoryManager{
     return saved ? JSON.parse(saved) : [];
   }
 
-  showHistory(){
+  displayHistory(){
     const history = this.getHistory();
-    this.listContainer.innerHTML = '';
+    const historyList = document.getElementById('historyList');
+    const emptyHistory = document.getElementById('emptyHistory');
 
     if(history.length === 0){
-      const lang = localStorage.getItem('lang') || 'en';
-      this.listContainer.innerHTML = `
-        <p class="text-gray-500 dark:text-gray-400 text-center py-8">${translations[lang].noHistory}</p>
-      `;
-    } else{
-      history.forEach((item, index) => {
-        const date = new Date(item.timestamp);
-        const timeString = date.toLocaleString();
-        const historyItem = document.createElement('div');
-
-        historyItem.className = 'history-item';
-        historyItem.innerHTML = `
-          <div class="flex items-center gap-3">
-            <img src="${item.imageData}" alt="QR Code" class="w-16 h-16 rounded-lg">
-            <div class="flex-1 text-left">
-              <p class="font-semibold text-gray-800 dark:text-white truncate">${this.truncateText(item.text, 30)}</p>
-              <p class="text-sm text-gray-500 dark:text-gray-400">${timeString}</p>
-            </div>
-          </div>
-        `;
-
-        historyItem.addEventListener('click', () => {
-          document.getElementById('qrText').value = item.text;
-          this.dialog.close();
-        });
-
-        this.listContainer.appendChild(historyItem);
-      });
-
-      const lang = localStorage.getItem('lang') || 'en';
-      const clearBtn = document.createElement('button');
-      clearBtn.className = 'w-full mt-4 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg transition-all duration-300 transform hover:scale-105';
-      clearBtn.innerText = translations[lang].clearHistory;
-      clearBtn.addEventListener('click', () => this.clearHistory());
-      this.listContainer.appendChild(clearBtn);
+      historyList.style.display = 'none';
+      emptyHistory.style.display = 'block';
+      return;
     }
 
-    this.dialog.showModal();
+    historyList.style.display = 'block';
+    emptyHistory.style.display = 'none';
+    historyList.innerHTML = '';
+
+    history.forEach((item, index) => {
+      const date = new Date(item.timestamp);
+      const timeString = date.toLocaleString();
+
+      const historyItem = document.createElement('div');
+      historyItem.className = 'col-12 col-md-6';
+      historyItem.innerHTML = `
+        <div class="history-item" data-text="${item.text.replace(/"/g, '&quot;')}">
+          <div class="d-flex align-items-center gap-3">
+            <div class="flex-shrink-0">
+              <img src="${item.imageData}" alt="QR Code" class="rounded" style="width: 60px; height: 60px; object-fit: contain;">
+            </div>
+            <div class="flex-grow-1 text-start">
+              <p class="mb-1 fw-semibold text-truncate" style="max-width: 200px;" title="${item.text}">
+                ${this.truncateText(item.text, 30)}
+              </p>
+              <small class="text-muted">
+                <i class="bi bi-clock me-1"></i>${timeString}
+                <span class="ms-2">
+                  <i class="bi bi-aspect-ratio me-1"></i>${item.size}px
+                </span>
+              </small>
+            </div>
+            <div class="flex-shrink-0">
+              <button class="btn btn-sm btn-outline-primary" onclick="qrApp.useFromHistory('${item.text.replace(/'/g, "\\'")}')">
+                <i class="bi bi-arrow-repeat"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      historyList.appendChild(historyItem);
+    });
   }
 
   clearHistory(){
-    localStorage.removeItem('qrHistory');
-    this.showHistory();
+    if(confirm('Are you sure you want to clear all history?')){
+      localStorage.removeItem('qrHistory');
+      this.statsManager.updateHistoryCount(0);
+      this.displayHistory();
+    }
   }
 
   truncateText(text, maxLength){
@@ -313,97 +393,348 @@ class HistoryManager{
 // OOP based QR Code Generator 
 
 class QRGenerator{
-  constructor(inputId, outputId, buttonId, dialogId, closeDialogId){
+  constructor(){
     // DOM references 
-    this.qrInput = document.getElementById(inputId);
-    this.qrOutput = document.getElementById(outputId);
-    this.generateBtn = document.getElementById(buttonId);
-    this.dialog = document.getElementById(dialogId);
-    this.closeDialog = document.getElementById(closeDialogId);
+    this.qrText = document.getElementById('qrText');
+    this.qrCode = document.getElementById('qrCode');
+    this.generateBtn = document.getElementById('generateBtn');
+    this.downloadBtn = document.getElementById('downloadBtn');
+    this.shareBtn = document.getElementById('shareBtn');
+    this.qrForm = document.getElementById('qrForm');
+    this.alertBox = document.getElementById('alertBox');
+    this.downloadSection = document.getElementById('downloadSection');
 
-    this.customizer = new QRCustomizer();
-    this.downloadManager = new DownloadManager('downloadBtn');
-    this.historyManager = new HistoryManager('historyDialog', 'historyList', 'historyBtn');
+    this.currentQRData = null;
+
+    this.themeManager = new ThemeManager();
+    this.langManager = new LanguageManager();
+    this.settingsManager = new SettingsManager();
+    this.statsManager = new StatsManager();
+    this.historyManager = new HistoryManager(this.statsManager, this.langManager); 
 
     // Event Listeners 
-    this.addListeners();
+    this.initEventListeners();
+    this.updateTypeBasedPlaceholder();
   }
 
-  addListeners(){
-    this.generateBtn.addEventListener('click', ()=> this.handleGenarate());
-    this.closeDialog.addEventListener('click', ()=> this.closeDialogBox());
-    this.downloadManager.downloadBtn.addEventListener('click', () => this.downloadManager.downloadQR());
+  initEventListeners(){
+    this.qrForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.handleGenarate();
+    });
 
-    this.qrInput.addEventListener('keypress', (e) => {
-      if(e.key === 'Enter'){
-        this.handleGenarate();
+    this.downloadBtn.addEventListener('click', () => this.downloadQR());
+    this.shareBtn.addEventListener('click', () => this.shareQR());
+
+    document.getElementById('qrType').addEventListener('change', () => {
+      this.updateTypeBasedPlaceholder();
+      this.qrText.value = '';
+    });
+
+    document.getElementById('formatSelect').addEventListener('change', () => {
+      if(this.currentQRData){
+        this.regenerateWithNewFormat();
       }
     });
+
+    this.qrText.addEventListener('input', () => this.validateInput());
+  }
+
+  updateTypeBasedPlaceholder(){
+    this.langManager.updatePlaceholder();
+
+    const qrType = document.getElementById('qrType').value;
+    const qrText = this.qrText;
+
+    const helperTexts = {
+      wifi: 'Format: WIFI:T:WPA;S:NetworkName;P:Password;;',
+      email: 'Format: mailto:email@example.com?subject=Subject&body=Message',
+      phone: 'Format: tel:+1234567890'
+    }
+  }
+
+  validateInput(){
+    const text = this.qrText.value.trim();
+    const qrType = document.getElementById('qrType').value;
+
+    let isValid = true;
+    let errorMessage = '';
+
+    if(text.length === 0){
+      isValid = false;
+      errorMessage = this.langManager.getText('alert');
+    } else if(qrType === 'email' && text.length > 0 && !text.includes('@') && !text.startsWith('mailto:')){
+      isValid = false;
+      errorMessage = 'Please enter a valid email format';
+    } else if(qrType === 'phone' && text.length > 0 && !text.match(/[\d\+\-\(\)\s]/)){
+      isValid = false;
+      errorMessage = 'Please enter a valid phone number';
+    }
+
+    if(!isValid && text.length > 0){
+      this.qrText.classList.add('is-invalid');
+    } else{
+      this.qrText.classList.remove('is-invalid');
+    }
+
+    return isValid;
   }
 
   handleGenarate(){
-    const text = this.qrInput.value.trim();
-    this.qrOutput.innerHTML = '';
-    this.downloadManager.hide();
-
-    if(text.length === 0){
-      this.dialog.showModal();
+    const text = this.qrText.value.trim();
+    
+    if(!this.validateInput() || text.length === 0){
+      this.showAlert(this.langManager.getText('alert'));
       return;
     }
 
-    this.generateBtn.disabled = true;
-    this.generateBtn.innerHTML = '<div class="spinner"></div>';
-
-    setTimeout(() => {
-      this.generateQRCode(text);
-      this.generateBtn.disabled = false;
-      const lang = localStorage.getItem('lang') || 'en';
-      this.generateBtn.innerText = translations[lang].generateBtn;
-    }, 500);
+    this.generateQRCode(text);
+      
   }
 
   generateQRCode(text){
-    const settings = this.customizer.getSettings();
-    const size = parseInt(settings.size);
+    this.setLoadingState(true);
 
-    const qr = new QRCode(this.qrOutput, {
-      text: text,
-      width: 160,
-      height: 160,
-      colorDark: settings.darkColor,
-      colorLight: settings.lightColor,
-      correctLevel: QRCode.CorrectLevel[settings.errorLevel]
-    });
+    this.qrCode.innerHTML = '';
+    this.downloadSection.classList.add('d-none');
 
     setTimeout(() => {
-      const canvas = this.qrOutput.querySelector('canvas');
-      if(canvas){
-        const imageData = canvas.toDataURL('image/png');
-        this.downloadManager.setQRData(text, canvas);
-        this.historyManager.addToHistory(text, imageData);
+      try {
+        const settings = this.settingsManager.getSettings();
+        const format = document.getElementById('formatSelect').value;
+
+        const qr = new QRCode(this.qrCode, {
+          text: text,
+          width: settings.size,
+          height: settings.size,
+          colorDark: settings.darkColor,
+          colorLight: settings.lightColor,
+          correctLevel: QRCode.CorrectLevel[settings.errorLevel]
+        });
+
+        setTimeout(() => {
+          const canvas = this.qrCode.querySelector('canvas');
+          if(canvas){
+            this.qrCode.parentElement.classList.add('has-qr');
+            this.downloadSection.classList.remove('d-none');
+
+            this.currentQRData = {
+              text: text,
+              canvas: canvas,
+              format: format
+            };
+
+            if(settings.autoSave){
+              const imageData = canvas.toDataURL(`image/${format}`);
+              this.historyManager.addToHistory(text, imageData, format);
+            }
+
+            this.statsManager.incrementGenerated();
+
+            this.showSuccess();
+          }
+
+          this.setLoadingState(false);
+        }, 100)
+      } catch (error) {
+        console.error('QR Generation Error:', error);
+        this.showAlert(this.langManager.getText('error'));
+        this.setLoadingState(false);
       }
-    }, 600)
+    }, 300);
   }
 
-  closeDialogBox(){
-    this.dialog.close();
+  regenerateWithNewFormat(){
+    if(this.currentQRData){
+      this.generateQRCode(this.currentQRData.text);
+    }
+  }
+
+  downloadQR(){
+    if(!this.currentQRData) return;
+
+    const canvas = this.currentQRData.canvas;
+    const format = this.currentQRData.format;
+    const mimeType = `image/${format}`;
+
+    const link = document.createElement('a');
+    const timestamp = new Date().getTime();
+    link.download = `qr-Code-${timestamp}.${format}`;
+    link.href = canvas.toDataURL(mimeType);
+    link.click();
+
+    this.statsManager.incrementDownloads();
+    this.showDownloadSuccess();
+  }
+
+  shareQR(){
+    if(!this.currentQRData) return;
+    const canvas = this.currentQRData.canvas;
+
+    if(navigator.share && navigator.canShare){
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], '/images/QRCode.jpg', { type: 'image/png' });
+
+        if(navigator.canShare({ files: [file] })){
+          try {
+            await navigator.share({
+              title: 'QR Code',
+              text: `QR Code for: ${this.currentQRData.text}`,
+              files: [file]
+            });
+          } catch (error) {
+            this.copyToClipboard();
+          }
+        } else{
+          this.copyToClipboard();
+        }
+      });
+    } else{
+      this.copyToClipboard();
+    }
+  }
+
+  copyToClipboard(){
+    if(!this.currentQRData) return;
+
+    const canvas = this.currentQRData.canvas;
+
+    canvas.toBlob(async (blob) => {
+      try {
+        const item = new ClipboardItem({ 'image/png': blob });
+        await navigator.clipboard.write([item]);
+        this.showCopySuccess();
+      } catch (error) {
+        try {
+          await navigator.clipboard.writeText(this.currentQRData.text);
+          this.showCopySuccess();
+        } catch (textError) {
+          console.error('Copy failed:', textError);
+        }
+      }
+    });
+  }
+
+  useFromHistory(text){
+    this.qrText.value = text;
+
+    const historyModal = bootstrap.Modal.getInstance(document.getElementById('historyModal'));
+    if(historyModal){
+      historyModal.hide();
+    }
+
+    this.generateQRCode(text);
+  }
+
+  setLoadingState(loading){
+    const btnText = document.getElementById('generateBtnText');
+
+    if(loading){
+      this.generateBtn.disabled = true;
+      btnText.innerHTML = '<span class="spinner me-2"></span>' + this.langManager.getText('generating');
+    } else{
+      this.generateBtn.disabled = false;
+      btnText.textContent = this.langManager.getText('generateBtn');
+    }
+  }
+
+  showAlert(message){
+    const alertText = document.getElementById('alertText');
+    alertText.textContent = message;
+    this.alertBox.style.display = 'block';
+    this.alertBox.classList.add('show');
+
+    setTimeout(() => {
+      this.alertBox.classList.remove('show');
+      setTimeout(() => {
+        this.alertBox.style.display = 'none';
+      }, 150);
+    }, 5000);
+  }
+
+  showSuccess(){
+    this.settingsManager.showToast(this.langManager.getText('success'), 'success');
+    this.qrCode.classList.add('success-pulse');
+    setTimeout(() => this.qrCode.classList.remove('success-pulse'), 600);
+  }
+
+  showDownloadSuccess(){
+    const originalText = this.downloadBtn.innerHTML;
+    this.downloadBtn.innerHTML = `<i class="bi bi-check-circle me-2"></i>${this.langManager.getText('downloaded')}`;
+    this.downloadBtn.classList.add('success-pulse');
+
+    setTimeout(() => {
+      this.downloadBtn.innerHTML = originalText;
+      this.downloadBtn.classList.remove('success-pulse');
+    }, 2000);
+  }
+
+  showCopySuccess(){
+    this.settingsManager.showToast(this.langManager.getText('copied'), 'info');
   }
 }
 
 // initial app 
-document.addEventListener('DOMContentLoaded', ()=>{
-  const qrApp = new QRGenerator('qrText', 'qrCode', 'generateBtn', 'alertDialog', 'closeDialog');
-  const themeManager = new ThemeManager('themeSelect');
-  const langManager = new LanguageManager('langSelect');
+document.addEventListener('DOMContentLoaded', () => {
+  window.qrApp = new QRGenerator();
+  
+  document.querySelector('.main-card').style.opacity = '0';
+  document.querySelector('.main-card').style.transform = 'translateY(30px)';
 
-  const settingsDialog = document.getElementById('settingsDialog');
-  document.getElementById('settingsBtn').addEventListener('click', ()=> settingsDialog.showModal());
-  document.getElementById('closeSettings').addEventListener('click', ()=> settingsDialog.close());
+  setTimeout(() => {
+    document.querySelector('.main-card').style.opacity = '1';
+    document.querySelector('.main-card').style.transform = 'translateY(0)';
+  }, 100);
 
-  const generateBtn = document.getElementById('generateBtn');
-  generateBtn.classList.add('pulse-animation');
+  document.addEventListener('keydown', (e) => {
+    if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
+      e.preventDefault();
+      qrApp.handleGenarate();
+    }
 
-  generateBtn.addEventListener('click', () =>{
-    generateBtn.classList.remove('pulse-animation');
-  }, {once: true});
+    if((e.ctrlKey || e.metaKey) && e.key === 'd' && qrApp.currentQRData){
+      e.preventDefault();
+      qrApp.downloadQR();
+    }
+
+    if(e.key === 'Escape'){
+      const modals = document.querySelector('.modal.show');
+      modals.forEach(modal => {
+        const bsModal = bootstrap.Modal.getInstance(modal);
+        if(bsModal) bsModal.hide();
+      });
+    }
+  });
+
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+
+  console.log('Advanced QR Code Generator initialized successfully!');
+});
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+
+  const installBtn = document.createElement('button');
+  installBtn.className = 'btn btn-outline-primary btn-sm position-fixed bottom-0 end-0 m-3';
+  installBtn.innerHTML = '<i class="bi bi-download me-2"></i>Install App';
+  installBtn.style.zIndex = '9999';
+
+  installBtn.addEventListener('click', () => {
+    e.prompt();
+    e.userChoice.then((choiceResult) => {
+      if(choiceResult.outcome === 'accepted'){
+        installBtn.remove();
+      }
+    });
+  });
+
+  document.body.appendChild(installBtn);
+
+  setTimeout(() => {
+    if(installBtn.parentNode){
+      installBtn.remove();
+    }
+  }, 10000);
 });
